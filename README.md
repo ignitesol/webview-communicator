@@ -28,8 +28,8 @@ in the android `Activity` as described below.
 
     You will need to create an instance of WebViewCommunicator, it accepts two parameters
 
-    1. An instance of `WebView` with which you want to use the communicator
-    2. An instance `Handler`
+1. An instance of `WebView` with which you want to use the communicator
+2. An instance `Handler`
 
 ```
     WebView myWebView = new WebView(this);
@@ -88,7 +88,7 @@ The `router` can then call the desired methods. eg
 
 Once a Java object is registered you can call it from Javascript as follows
 
-```
+```javascript
     WebViewCommunicator.nativeCall("UIManager", "exit");
 ```
 
@@ -100,7 +100,7 @@ First we will need to register our Javascript object that will take appropriate
 actions when buttons are pressed. We add this to our Javascript code (after setting up
 WebViewCommunicator in the webview) 
 
-```
+```javascript
     WebViewCommunicator.register("UIManager", {
                                     keypress : function(keycode, immediate) {
                                         if(keycode === BACK_BUTTON && immediate) {
@@ -114,7 +114,7 @@ WebViewCommunicator in the webview)
 In the activity first create an instance of WebViewCommunicator. We also register an object 
 to accept messages from Javascript (not needed if we don't invoke any java object from JS).
 
-```
+```java
     Handler handler = new Handler();
     WebViewCommunicator webInterface = new WebViewCommunicator(myWebView, handler);
     webInterface.register("UIManager", new Communicator() {
@@ -135,7 +135,7 @@ to accept messages from Javascript (not needed if we don't invoke any java objec
 
 We can now notify our javascript object as follows
 
-```
+```java
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
 	JSONArray args = new JSONArray();
