@@ -21,7 +21,7 @@ in the android `Activity` as described below.
     You will need to include the webcommunicator.js in desired webview.
 
 ```
-    <script type="text/javascript" src="/path/to/communicator.js"></script>
+<script type="text/javascript" src="/path/to/communicator.js"></script>
 ```
 
 + ###In activity
@@ -32,9 +32,9 @@ in the android `Activity` as described below.
 2. An instance `Handler`
 
 ```
-    WebView myWebView = new WebView(this);
-    Handler myHandler = new Handler();
-    WebViewCommunicator myCommunicator = new WebViewCommunicator(myWebView, myHandler);
+WebView myWebView = new WebView(this);
+Handler myHandler = new Handler();
+WebViewCommunicator myCommunicator = new WebViewCommunicator(myWebView, myHandler);
 ```
 
 ##2. Usage
@@ -44,11 +44,11 @@ in the android `Activity` as described below.
 Once setup you can now register the Javascript objects that you want to call from     the activity as follows (In Javascript)
 
 ```javascript
-    WebViewCommunicator.register("myObject", {
-        mymethod : function(a, b, c){
-            //...
-        }
-    });
+WebViewCommunicator.register("myObject", {
+   mymethod : function(a, b, c){
+         //...
+   }
+});
 ```
 
 The first argument to `register` is the `tag` that will can be used for communicating
@@ -58,10 +58,10 @@ argument is your object.
 Now from you activity you can call this object as follows (arguments are packed in JSONArray)
 
 ```java
-    JSONArray args = new JSONArray();
-    args.put("first_args");
-    args.put("second_args");
-    myCommunicator.callJS("myObject", "mymethod", args);
+JSONArray args = new JSONArray();
+args.put("first_args");
+args.put("second_args");
+myCommunicator.callJS("myObject", "mymethod", args);
 ```
 
 where `myCommunicator` is the instance of `WebCommunicator`. 
@@ -76,20 +76,20 @@ called name of the method called and the arguments passed to the method as a `JS
 The `router` can then call the desired methods. eg
 
 ```java
-    myCommunicator.register("UIManager", new Communicator() {
-        @Override
-        public void router(String method, JSONArray arg) {
-            if(method.equals("exit") {
-                confirmExit(arg);
-            }
-        }   
-    });
+myCommunicator.register("UIManager", new Communicator() {
+    @Override
+    public void router(String method, JSONArray arg) {
+        if(method.equals("exit") {
+            confirmExit(arg);
+        }
+    }
+});
 ```
 
 Once a Java object is registered you can call it from Javascript as follows
 
 ```javascript
-    WebViewCommunicator.nativeCall("UIManager", "exit");
+WebViewCommunicator.nativeCall("UIManager", "exit");
 ```
 
 ##3. Example usage
@@ -101,46 +101,46 @@ actions when buttons are pressed. We add this to our Javascript code (after sett
 WebViewCommunicator in the webview) 
 
 ```javascript
-    WebViewCommunicator.register("UIManager", {
-                                    keypress : function(keycode, immediate) {
-                                        if(keycode === BACK_BUTTON && immediate) {
-                                            // Do some random stuff
-                                            // Call native Java object to exit the application
-                                            WebViewCommunicator.nativeCall("UIManager", "exitApp", 0, "Normal exit");
-                                        }
-                                    });
+WebViewCommunicator.register("UIManager", {
+								keypress : function(keycode, immediate) {
+									if(keycode === BACK_BUTTON && immediate) {
+										// Do some random stuff
+										// Call native Java object to exit the application
+										WebViewCommunicator.nativeCall("UIManager", "exitApp", 0, "Normal exit");
+									}
+								});
 ```
 
 In the activity first create an instance of WebViewCommunicator. We also register an object 
 to accept messages from Javascript (not needed if we don't invoke any java object from JS).
 
 ```java
-    Handler handler = new Handler();
-    WebViewCommunicator webInterface = new WebViewCommunicator(myWebView, handler);
-    webInterface.register("UIManager", new Communicator() {
-    		@Override
-		public void router(String method, JSONArray args) {
-                if(method === "exitApp") {
-                    try {
-                        int exitCode = args.getInt(0);
-                        String exitMessage = args.getString(1);
-                        exitApp(exitCode, exitMessage);
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-                }
+Handler handler = new Handler();
+WebViewCommunicator webInterface = new WebViewCommunicator(myWebView, handler);
+webInterface.register("UIManager", new Communicator() {
+	@Override
+	public void router(String method, JSONArray args) {
+			if(method === "exitApp") {
+				try {
+					int exitCode = args.getInt(0);
+					String exitMessage = args.getString(1);
+					exitApp(exitCode, exitMessage);
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
 			}
-		});
+		}
+});
 ```
 
 We can now notify our javascript object as follows
 
 ```java
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-	JSONArray args = new JSONArray();
-        args.put(keyCode);
-        args.put(true);
-		webInterface.callJS("UIManager", "keypress", args);
-    }
+@Override
+public boolean onKeyDown(int keyCode, KeyEvent event) {
+JSONArray args = new JSONArray();
+	args.put(keyCode);
+	args.put(true);
+	webInterface.callJS("UIManager", "keypress", args);
+}
 ```
