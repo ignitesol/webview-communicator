@@ -70,8 +70,12 @@ var WebViewCommunicator =  (function(){
 	    return "android";
 	}
     }
-
+    
+    /*
+     * Explicitly set the platform the code is running on
+     */
     function set_platform(_platform) {
+	_platform = _platform.toLowerCase();
 	if(platform === "android" || platform === "ios") {
 	    platform = _platform;
 	} else {
