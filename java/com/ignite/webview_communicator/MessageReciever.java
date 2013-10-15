@@ -5,11 +5,11 @@ import org.json.JSONArray;
 /**
  * @version 0.1
  *
- *  Communicator defines the interface that Java objects
+ *  MessageReciever defines the interface that Java objects
  *  need to implement in order to receive  from Javascript
  *  in WebView via WebViewCommunicator
  */
-public interface Communicator {
+public interface MessageReciever {
 	/**
 	 * The registered objects will receive the the name of
 	 * method called and arguments passed via this method.
@@ -18,5 +18,5 @@ public interface Communicator {
 	 * @param method  the name of the method called from javascript
 	 * @param arg     a JSONArray containing the arguments passed 
 	 */
-	public void router(String method, JSONArray arg);
+	public void receiveCallFromJS(String method, JSONArray arg);
 }

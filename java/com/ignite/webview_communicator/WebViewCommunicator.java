@@ -21,7 +21,7 @@ public class WebViewCommunicator {
 	 * registeredObjects stores the mapping between the registered object and
 	 * the tags used to recognize them
 	 */
-	private HashMap<String, Communicator> registeredObjects;
+	private HashMap<String, MessageReciever> registeredObjects;
 
 	/**
 	 * webViewInstance is a reference to the webview in which the Javascript
@@ -54,7 +54,7 @@ public class WebViewCommunicator {
 	public WebViewCommunicator(WebView webView, Handler uiHandler) {
 		this.webViewInstance = webView;
 		this.uiHandler = uiHandler;
-		this.registeredObjects = new HashMap<String, Communicator>();
+		this.registeredObjects = new HashMap<String, MessageReciever>();
 		webView.addJavascriptInterface(this, "_WebViewCommunicator");
 	}
 
@@ -135,16 +135,16 @@ public class WebViewCommunicator {
      * Allows the activity to register objects for receiving messages
 	 * from Javascript.
 	 *
-	 * The receiving object should implement the Communicator interface.
+	 * The receiving object should implement the MessageReciever interface.
 	 *
 	 * @param tag     the tag with which the receiving object will be invoked
 	 * @param client  an object implementing the communicator interface
-	 *                @see Communicator
+	 *                @see MessageReciever
 	 *
 	 * @return        true if the object was successfully registered else false
 	 *                is the tag is already being used
 	 */
-    public boolean register(String tag, Communicator client) {
+    public boolean register(String tag, MessageReciever client) {
         if(registeredObjects.containsKey(tag)) {
             Log.e("Duplicate tag", "An object is already registered with the given tag");
             return false;
@@ -167,9 +167,9 @@ public class WebViewCommunicator {
 	@JavascriptInterface
 	public boolean nativeCall(String tag, String method, String args) {
 
-        // Check if the an object is registered with given tag, if we have such object
+		// Check if the an object is registered with given tag, if we have such object
         // invoke its 'router' method else simply log an error message and raise return
-	// false
+		// false
         if(registeredObjects.containsKey(tag)) {
             final String TAG = tag, METHOD = method, ARGS = args;
 
@@ -177,7 +177,7 @@ public class WebViewCommunicator {
                 @Override
                 public void run() {
                     try {
-                        registeredObjects.get(TAG).router(METHOD, new JSONArray(ARGS));
+                        registeredObjects.get(TAG).receiveCallFromJS(METHOD, new JSONArray(ARGS));
                     } catch (JSONException e) {
                         Log.w("nativeCall","JSON Parsing failed");
                         e.printStackTrace();

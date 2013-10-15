@@ -12,7 +12,7 @@
 #define WVCOMMUNICATOR_PREFIX @"js:WebViewCommunicator/"
 
 // Objects that wish to recieve messages from javascript need to conform to this protocol
-@protocol WVCommunicator <NSObject>
+@protocol MessageReciever <NSObject>
 
 // The objects will recieve the method name, and an array of arguments passed via this method
 @required
@@ -33,7 +33,7 @@
 - (void) callJS:(NSString *)object onMethod:(NSString *)method withArguments:(NSMutableArray *)arguments;
 
 // Register an object for listening messages from Javascript, it accepts the tag that will be used to identify the object
-// the object needs to conform to the WVCommunicator protocol
-- (BOOL) registerObject:(id <WVCommunicator>) object withTag:(NSString*) tag;
+// the object needs to conform to the MessageReciever protocol
+- (BOOL) registerObject:(id <MessageReciever>) object withTag:(NSString*) tag;
 
 @end

@@ -73,7 +73,7 @@
  *
  * If an object is successfully registered return YES else NO
  */
-- (BOOL) registerObject:(id <WVCommunicator>) object withTag:(NSString*) tag {
+- (BOOL) registerObject:(id <MessageReciever>) object withTag:(NSString*) tag {
     
     // We first check if any object is already registered, if so we don't register present object
     if ([self.registeredObjects objectForKey:tag]) {
@@ -106,7 +106,7 @@
         
         NSArray* components = [decodeURL componentsSeparatedByString:@"/"];
         
-        id <WVCommunicator> target = [self.registeredObjects objectForKey:[components objectAtIndex:0]];
+        id <MessageReciever> target = [self.registeredObjects objectForKey:[components objectAtIndex:0]];
         
         NSString *method = [components objectAtIndex:1];
         
