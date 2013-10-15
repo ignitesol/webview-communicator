@@ -1,7 +1,7 @@
 # What is WebView-Communicator?
 
 WebView-Communicator simplifies the communication between the the WebView and and the underlying
-(iOS and Android) application.
+(iOS or Android) application.
 
 With WebView-Communicator you can simply `register` your objects and call its methods 
 with desired arguments. Right now the library supports only asynchronous calls.
@@ -162,3 +162,12 @@ Finally you call the registered Java or Objective C object from Javascript as fo
 ```javascript
 WebViewCommunicator.nativeCall("UIManager", "exit");
 ```
+
+# Tips
+
+You can explicitly set the plaform on which the JS code is running using the `setPlatform` method of `WebViewCommunicator`.
+
+# Caveats
+
+In iOS `WebViewCommunicator` assigns itself as the delegate for `UIWebView` as a result assigning delegates
+to the `UIWebView` may not work as expected.
