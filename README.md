@@ -1,6 +1,7 @@
 # What is WebView-Communicator?
 
 WebView-Communicator simplifies the communication between the the WebView and and the underlying
+
 (iOS or Android) application.
 
 With WebView-Communicator you can simply `register` your objects and call its methods 
@@ -43,7 +44,6 @@ WebViewCommunicator myCommunicator = new WebViewCommunicator(myWebView, myHandle
 ```objective-c
 WebViewCommunicator* communicator = [[WebViewCommunicator alloc] initWithWebView:webview];
 ```
-
 
 ##2. Usage
 
