@@ -15,7 +15,7 @@ iOS or Android application.
 
 ###In WebView
 
-You will need to include the `communicator.js` (from `js/` folder) in desired webview.
+You will need to include the `communicator.js` (from `js` folder) in desired webview.
 NOTE: This step is identical for Android as well as iOS.
 
 ```
@@ -24,11 +24,11 @@ NOTE: This step is identical for Android as well as iOS.
 
 ###In android activity
 
-First get the required files from `java/` folder and import them, you will need to create an instance of 
-WebViewCommunicator which accepts two parameters
+First get the required files from `java` folder and import them, you will need to create an instance of 
+`WebViewCommunicator`, the constructor accepts two parameters
 
 1. An instance of `WebView` with which you wish to communicate
-2. An instance `Handler`
+2. An instance of `Handler`
 
 ```java
 WebView myWebView = new WebView(this);
@@ -38,13 +38,13 @@ WebViewCommunicator myCommunicator = new WebViewCommunicator(myWebView, myHandle
 
 ###In iOS application
     
-Get the required files from `objective-c/` folder. You will need to create an instance of WebViewCommunicator
+Get the required files from `objective-c` folder. You will need to create an instance of `WebViewCommunicator`
 using the instance of webview you wish to communicate with
     
 ```objective-c
 WebViewCommunicator* myCommunicator = [[WebViewCommunicator alloc] initWithWebView:webview];
 ```
-where 'webview' is the instance of 'UIWebView' you want to communicate with.
+where `webview` is the instance of `UIWebView` you want to communicate with.
 
 
 ##2. Usage
@@ -165,10 +165,10 @@ WebViewCommunicator.nativeCall("UIManager", "exit");
 
 # Tips
 
-You can explicitly set the plaform on which the JS code is running using the `setPlatform` method of 
-`WebViewCommunicator`.
+Currently the javascript code tries to guess the platform, however you may want to explicitly set the plaform
+using the `setPlatform` method of `WebViewCommunicator` object.
 
 # Caveats
 
 In iOS `WebViewCommunicator` assigns itself as the delegate for `UIWebView`, as a result assignment of delegate
-to the `UIWebView` by the user may not work as expected (See `WebViewCommunicator.m` for details).
+to the `UIWebView` by the user may not work as expected (See the file `WebViewCommunicator.m` for details).
