@@ -144,7 +144,7 @@ public class WebViewCommunicator {
 	 * @return        true if the object was successfully registered else false
 	 *                is the tag is already being used
 	 */
-    public boolean register(String tag, MessageReciever client) {
+    public boolean registerObject(String tag, MessageReciever client) {
         if(registeredObjects.containsKey(tag)) {
             Log.e("Duplicate tag", "An object is already registered with the given tag");
             return false;
