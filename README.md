@@ -13,18 +13,19 @@ iOS or Android application.
 
 ##1. Setup
 
-+ ###In WebView
+###In WebView
 
-    You will need to include the `communicator.js` (from `js/` folder) in desired webview.
-    NOTE: This step is identical for Android as well as iOS.
+You will need to include the `communicator.js` (from `js/` folder) in desired webview.
+NOTE: This step is identical for Android as well as iOS.
 
 ```
 <script type="text/javascript" src="/path/to/communicator.js"></script>
-```    
+``` 
 
-+ ###In android activity
-    First get the required files from `java/` folder and import them, you will need to create an instance of 
-    WebViewCommunicator which accepts two parameters
+###In android activity
+
+First get the required files from `java/` folder and import them, you will need to create an instance of 
+WebViewCommunicator which accepts two parameters
 
 1. An instance of `WebView` with which you wish to communicate
 2. An instance `Handler`
@@ -35,15 +36,15 @@ Handler myHandler = new Handler();
 WebViewCommunicator myCommunicator = new WebViewCommunicator(myWebView, myHandler);
 ```
 
-+ ###In iOS application
+###In iOS application
     
-    Get the required files from `objective-c/` folder. You will need to create an instance of WebViewCommunicator
-    using the instance of webview you wish to communicate with
+Get the required files from `objective-c/` folder. You will need to create an instance of WebViewCommunicator
+using the instance of webview you wish to communicate with
     
 ```objective-c
 WebViewCommunicator* myCommunicator = [[WebViewCommunicator alloc] initWithWebView:webview];
 ```
-     where 'webview' is the instance of 'UIWebView' you want to communicate with.
+where 'webview' is the instance of 'UIWebView' you want to communicate with.
 
 
 ##2. Usage
