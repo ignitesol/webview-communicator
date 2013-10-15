@@ -1,46 +1,54 @@
-# What is Communicator?
+# What is WebView-Communicator?
 
-Android provides some simple mechanisms for interaction between a webview and
-the activity embedding it namely `addJavascriptInterface` and `loadUrl`.
-Communicator is a simple wrapper around these functions which allows the
-activity and the webview to communicate without having to worry about the
-underlying mechanism.
+WebView-Communicator simplifies the communication between the the WebView and and the underlying
+(iOS and Android) application.
 
-With Communicator you can simply `register` your objects and call its methods
+With WebView-Communicator you can simply `register` your objects and call its methods 
 with desired arguments. Right now the library supports only asynchronous calls.
 
 # How to use it?
 
-For using communicator you will need to set it up in your `WebView` as well as
-in the android `Activity` as described below.
+For using WebView-Communicator you will need to set it up in your `WebView` as well as
+in the underlying iOS or Android application.
 
 ##1. Setup
 
 + ###In WebView
 
-    You will need to include the webcommunicator.js in desired webview.
+    You will need to include the communicator.js in desired webview.
+    NOTE: This step is identical for Android as well as iOS.
 
 ```
 <script type="text/javascript" src="/path/to/communicator.js"></script>
 ```
 
-+ ###In activity
++ ###In android activity
 
-    You will need to create an instance of WebViewCommunicator, it accepts two parameters
+    In case of Android you will need to create an instance of WebViewCommunicator, it accepts two parameters
 
 1. An instance of `WebView` with which you want to use the communicator
 2. An instance `Handler`
 
-```
+```java
 WebView myWebView = new WebView(this);
 Handler myHandler = new Handler();
 WebViewCommunicator myCommunicator = new WebViewCommunicator(myWebView, myHandler);
+```
+
++ ###In iOS application
+    
+    You will need to create an instance of WebViewCommunicator, you will need to provide it with the instance of
+    webview you wish to communicate with.
+    
+```objective-c
+self.communicator = [[WebViewCommunicator alloc] initWithWebView:self.webview];
 ```
 
 ##2. Usage
 
 ### Java -> Javascript
 
+####Step 1.
 Once setup you can now register the Javascript objects that you want to call from     the activity as follows (In Javascript)
 
 ```javascript
@@ -55,92 +63,101 @@ The first argument to `register` is the `tag` that will can be used for communic
 with this object by the activity ("__self" is reserved for internal use), the second
 argument is your object.
 
-Now from you activity you can call this object as follows (arguments are packed in JSONArray)
+####Step 2.
+Now from you activity you can call the object registered above as follows (arguments are packed in JSONArray)
 
 ```java
+// Pack the arguments in JSONArray
 JSONArray args = new JSONArray();
 args.put("first_args");
-args.put("second_args");
+args.put(1);
+
+// Call myObject's 'mymethod' with the arguments
 myCommunicator.callJS("myObject", "mymethod", args);
 ```
 
 where `myCommunicator` is the instance of `WebCommunicator`. 
 
-### Javascript -> Java
-        
-A Java object that wants to expose itself to Javascript needs to implement 'Communicator'
-interface. The interface defines `router` method. Whenever a Java object is called from
-Javascript, the `router` method of the object recieves two arguments, the method is
+### Objective C -> Javascript
+####Step 1.
+This is same as Step 1. of above
+    
+####Step 2.
+From you application you can call the object registered in Step 1. as follows (arguments are packed in NSMutableArray)
+
+```objective-c
+// Pack the arguments in NSMutableArray
+NSMutableArray *args = [[NSMutableArray alloc] init];
+[args addObject: @"first_args"];
+[args addObject:[[NSNumber alloc] initWithInt:1]];
+
+// Call myObject's 'mymethod' with the arguments
+[self.communicator callJS:@"Communicator" onMethod:@"fromObjC" withArguments:args];
+
+```
+
+### Javascript -> Native (Java or Objective C)
+
+####Registering native objects
+The first step is to register the native object as follows
+
+#####1. Java        
+A Java object that wants to expose itself to Javascript needs to implement 'MessageReciever'
+interface. The interface defines `receiveCallFromJS` method. Whenever a Java object is called from
+Javascript, the `receiveCallFromJS` method of the object recieves two arguments, the method is
 called name of the method called and the arguments passed to the method as a `JSONArray`.
 
-The `router` can then call the desired methods. eg
+The object can then be registered to recieve Javascript messages using the `register` method of
+WebViewCommunicator.
 
 ```java
 myCommunicator.register("UIManager", new Communicator() {
     @Override
     public void router(String method, JSONArray arg) {
         if(method.equals("exit") {
-            confirmExit(arg);
+            confirmExit(arg.getString(0));
         }
     }
 });
 ```
 
-Once a Java object is registered you can call it from Javascript as follows
+#####2. Objective C
+In Objective C, the object that wants to expose itself to Javascript needs to implement the
+'MessageReciever' protocol. The protocol defines `receiveCallFromJS` method. Whenever an 
+Objective C object is called from Javascript, the `receiveCallFromJS` method of the object recieves 
+two arguments, the method is called name of the method called and the arguments passed to the method 
+as a `NSArray`.
+
+The `receiveCallFromJS` can then call the desired methods. eg
+
+```objective-c
+@interface ExitManager <MessageReciever>
+- (void) confirmExit:(NSString*)message;
+@end
+
+@implementation ExitManager
+- (void) receiveCallFromJS:(NSString *)method withArguments:(NSArray *)arguments {
+    if ([method isEqualToString:@"exit"]) {
+        [self confirmExit:[arguments objectAtIndex:1]];
+    }
+}
+
+...
+
+@end
+```
+
+The object can then be registered to recieve Javascript messages using the `register` method of
+WebViewCommunicator.
+
+```objective-c
+[self.communicator registerObject:[[ExitManager alloc] init] withTag:@"UIManager"];
+```
+
+####Calling the object
+
+Finally you call the registered Java or Objective C object from Javascript as follows
 
 ```javascript
 WebViewCommunicator.nativeCall("UIManager", "exit");
-```
-
-##3. Example usage
-
-Lets control the actions taken when hardware buttons are pressed using javascript.
-
-First we will need to register our Javascript object that will take appropriate
-actions when buttons are pressed. We add this to our Javascript code (after setting up
-WebViewCommunicator in the webview) 
-
-```javascript
-WebViewCommunicator.register("UIManager", {
-								keypress : function(keycode, immediate) {
-									if(keycode === BACK_BUTTON && immediate) {
-										// Do some random stuff
-										// Call native Java object to exit the application
-										WebViewCommunicator.nativeCall("UIManager", "exitApp", 0, "Normal exit");
-									}
-								});
-```
-
-In the activity first create an instance of WebViewCommunicator. We also register an object 
-to accept messages from Javascript (not needed if we don't invoke any java object from JS).
-
-```java
-Handler handler = new Handler();
-WebViewCommunicator webInterface = new WebViewCommunicator(myWebView, handler);
-webInterface.register("UIManager", new Communicator() {
-	@Override
-	public void router(String method, JSONArray args) {
-			if(method === "exitApp") {
-				try {
-					int exitCode = args.getInt(0);
-					String exitMessage = args.getString(1);
-					exitApp(exitCode, exitMessage);
-				} catch (JSONException e) {
-					e.printStackTrace();
-				}
-			}
-		}
-});
-```
-
-We can now notify our javascript object as follows
-
-```java
-@Override
-public boolean onKeyDown(int keyCode, KeyEvent event) {
-JSONArray args = new JSONArray();
-	args.put(keyCode);
-	args.put(true);
-	webInterface.callJS("UIManager", "keypress", args);
-}
 ```
