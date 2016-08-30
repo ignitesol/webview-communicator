@@ -8,8 +8,10 @@
  *                 methods on javascript objects
  */
 var WebViewCommunicator =  (function(){
-    var platform = guess_platform();
-    var registered_objects = {};
+    var platform = guess_platform(),
+        registeredObjects = {},
+        callbacks = {},
+        callbackId = 0;
     /*
      * This method is used by android side of communicator and is
      * not intended to be called from JS code
@@ -19,20 +21,20 @@ var WebViewCommunicator =  (function(){
         method = unescape(method);
         params = JSON.parse(unescape(params));
 
-        var target_object = registered_objects[object];
+        var targetObject = registeredObjects[object];
 
-        if(!target_object) {
-	    console.log("WebViewCommunicator: Could not find object '" + target_object + "' called from android");
+        if(!targetObject) {
+            console.log("WebViewCommunicator: Could not find object '" + targetObject + "' called from android");
         } else {
-	    var target_method = target_object[method];
+            var targetMethod = targetObject[method];
 
-	    if(target_method) {
-                target_method.apply(target_object, params);
-	    } else {
-                var err_msg = "WebViewCommunicator: Could not find method '" + target_method + "' " +
-		    "on object'" + target_object +"' called from android";
-                console.log(err_msg);
-	    }
+            if(targetMethod) {
+                targetMethod.apply(targetObject, params);
+            } else {
+                var errMsg = "WebViewCommunicator: Could not find method '" + targetMethod + "' " +
+                        "on object'" + targetObject +"' called from android";
+                console.log(errMsg);
+            }
         }
     }
 
@@ -48,13 +50,13 @@ var WebViewCommunicator =  (function(){
      * 2) object: The object that needs to register itself
      */
     function register(tag, object) {
-        if(registered_objects[tag]) {
-	    throw {
+        if(registeredObjects[tag]) {
+            throw {
                 name : "DuplicateTag",
                 message : "Another object already registered with tag '" + tag + "'"
-	    };
+            };
         }
-        registered_objects[tag] = object;
+        registeredObjects[tag] = object;
     }
 
     /*
@@ -64,23 +66,23 @@ var WebViewCommunicator =  (function(){
      * _WebViewCommunicator which is injected only when we work on android.
      */
     function guess_platform() {
-	if (typeof _WebViewCommunicator === "undefined") {
-	    return "ios";
-	} else {
-	    return "android";
-	}
+        if (typeof _WebViewCommunicator === "undefined") {
+            return "ios";
+        } else {
+            return "android";
+        }
     }
     
     /*
      * Explicitly set the platform the code is running on
      */
     function set_platform(_platform) {
-	_platform = _platform.toLowerCase();
-	if(platform === "android" || platform === "ios") {
-	    platform = _platform;
-	} else {
-	    console.log("Platform not supported");
-	}
+        _platform = _platform.toLowerCase();
+        if(platform === "android" || platform === "ios") {
+            platform = _platform;
+        } else {
+            console.log("Platform not supported");
+        }
     }
 
     /*
@@ -99,34 +101,74 @@ var WebViewCommunicator =  (function(){
         var params = Array.prototype.slice.call(arguments, 2);
 
         if (platform === "android") {
-	    native_call_android(tag, method, params);
-	} else if (platform === "ios") {
-	    native_call_ios(tag, method, params);
-	}
-	
+            native_call_android(tag, method, params);
+        } else if (platform === "ios") {
+            native_call_ios(tag, method, params);
+        }
+    }
+
+    /*
+     Credits: http://stackoverflow.com/a/6000016
+     */
+    function isFunction(obj) {
+        return !!(obj && obj.constructor && obj.call && obj.apply);
+    }
+
+    /*
+     PURPOSE: Call a specified native method. And when the method is done with, call the
+     specified callback handler with the data the native method responds with
+     PARAMS: 1. tag 2. method have their usual meaning. 3. callback has to be a valid javascript function
+     */
+    function nativeCallWithCallback(tag, method, callback) {
+        // Incase the callback is a valid javascript function
+        // add it to the callbacks associative array
+        if(isFunction(callback)) {
+            // The callbackId is incremented by one everytime the nativeCallWithCallback method is called
+            callbackId += 1;
+            //Register the specified callback with an id
+            callbacks[callbackId] = callback;
+        }
+        // Get the other params.
+        var params = Array.prototype.slice.call(arguments, 3);
+        // Platform specific native call for the methods.
+        // We pass on the callbackId as an extra parameter
+        if (platform === "android") {
+            native_call_android(tag, method, callbackId, params);
+        } else if (platform === "ios") {
+            native_call_ios(tag, method, callbackId, params);
+        }
     }
 
     function native_call_android(tag, method, params){
-	return _WebViewCommunicator.nativeCall(tag, method, JSON.stringify(params));
+        return _WebViewCommunicator.nativeCall(tag, method, JSON.stringify(params));
     }
 
     function native_call_ios(tag, method, params) {
-	function getURL(tag, method, params) {
-	    var url = "js:WebViewCommunicator/" + tag + "/" + method + "/" + JSON.stringify(params);
-	    return url;
-	}
-	
-	var ifr = document.createElement('iframe');
+        function getURL(tag, method, params) {
+            var url = "js:WebViewCommunicator/" + tag + "/" + method + "/" + JSON.stringify(params);
+            return url;
+        }
+
+        var ifr = document.createElement('iframe');
         ifr.setAttribute('src', getURL(tag, method, params));
         document.documentElement.appendChild(ifr);
-	
-	ifr.parentElement.removeChild(ifr);
-	ifr = null;
+
+        ifr.parentElement.removeChild(ifr);
+        ifr = null;
     }
 
     register("__self", {
         log : function (message) {
-	    console.log(message);
+            console.log(message);
+        },
+        callback : function (resp) {
+            console.log(resp);
+            var callbackId = resp.callbackId;
+            if(!callbackId) {
+                // Call the call back handler
+                // with the response object 1. resp obtained from the native method call
+                callbacks[callbackId].apply(this, [resp]);
+            }
         }
     });
 
@@ -134,6 +176,6 @@ var WebViewCommunicator =  (function(){
         raiseEvent : raise_event,
         nativeCall : native_call,
         register : register,
-	setPlatform : set_platform
+        setPlatform : set_platform
     });
 })();
