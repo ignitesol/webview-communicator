@@ -83,7 +83,12 @@ var WebViewCommunicator =  (function(){
 
         return false;
     }
-    /*
+
+    function isIOSWebView() {
+        var is_uiwebview = /(iPhone|iPod|iPad).*AppleWebKit(?!.*Safari)/i.test(navigator.userAgent);
+        var is_safari_or_uiwebview = /(iPhone|iPod|iPad).*AppleWebKit/i.test(navigator.userAgent);
+        return is_uiwebview && is_safari_or_uiwebview;
+    }/*
      * Since now we are trying to support both platforms (iOS and android) using
      * the same JS code we need a way to determine the platform the script is
      * running. Here we try to guess the platform by check the availability of
@@ -92,7 +97,7 @@ var WebViewCommunicator =  (function(){
     function guess_platform() {
         if (typeof _WebViewCommunicator === "undefined") {
             var userAgent = checkUserAgent();
-            if(userAgent && userAgent == "iOS") {
+            if(userAgent && userAgent == "iOS" && isIOSWebView()) {
                 return "ios";
             } else {
                 return undefined;
