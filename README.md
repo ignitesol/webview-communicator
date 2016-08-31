@@ -106,8 +106,9 @@ The first step is to register the native object as follows
 #####1. Java        
 A Java object that wants to expose itself to Javascript needs to implement 'MessageReciever'
 interface. The interface defines `receiveCallFromJS` method. Whenever a Java object is called from
-Javascript, `receiveCallFromJS` is invoked with two arguments, the name of the method called from 
-Javascript and the arguments passed to the method packed in a `JSONArray`.
+Javascript, `receiveCallFromJS` is invoked with three arguments, the name of the method called from 
+Javascript, callBackId required for Javascript after the completion of required execution, and 
+the arguments passed to the method packed in a `JSONArray`.
 
 The object can then be registered to recieve Javascript messages using the `registerObject` method of
 WebViewCommunicator.
@@ -115,7 +116,7 @@ WebViewCommunicator.
 ```java
 myCommunicator.registerObject("UIManager", new MessageReciever() {
     @Override
-    public void receiveCallFromJS(String method, JSONArray arg) {
+    public void receiveCallFromJS(String method, int callBackId, JSONArray arg) {
         if(method.equals("exit") {
             confirmExit(arg.getString(0));
         }

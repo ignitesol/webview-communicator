@@ -165,19 +165,21 @@ public class WebViewCommunicator {
      * @return returns false if the object is not found else it returns true
      */
     @JavascriptInterface
-    public boolean nativeCall(String tag, String method, final int callbackId, String args) {
+    public boolean nativeCall(String tag, String method, int callbackId, String args) {
 
         // Check if the an object is registered with given tag, if we have such object
         // invoke its 'router' method else simply log an error message and raise return
         // false
         if (registeredObjects.containsKey(tag)) {
             final String TAG = tag, METHOD = method, ARGS = args;
+            final int CALLBACKID = callbackId;
 
             Thread mThread = new Thread(new Runnable() {
                 @Override
                 public void run() {
                     try {
-                        registeredObjects.get(TAG).receiveCallFromJS(METHOD, callbackId, new JSONArray(ARGS));
+                        registeredObjects.get(TAG).receiveCallFromJS(METHOD, CALLBACKID, new
+                                JSONArray(ARGS));
                     } catch (JSONException e) {
                         Log.w("nativeCall", "JSON Parsing failed");
                         e.printStackTrace();
