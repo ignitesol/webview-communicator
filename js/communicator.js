@@ -132,12 +132,13 @@ var WebViewCommunicator =  (function(){
      *
      */
     function native_call(tag, method) {
-        var params = Array.prototype.slice.call(arguments, 2);
+        var params = Array.prototype.slice.call(arguments, 2),
+            dummyCallbackId = 0;
 
         if (platform === "android") {
-            native_call_android(tag, method, params);
+            native_call_android(tag, method, dummyCallbackId, params);
         } else if (platform === "ios") {
-            native_call_ios(tag, method, params);
+            native_call_ios(tag, method, dummyCallbackId, params);
         }
     }
 
@@ -179,11 +180,11 @@ var WebViewCommunicator =  (function(){
         }
     }
 
-    function native_call_android(tag, method, params){
-        return _WebViewCommunicator.nativeCall(tag, method, JSON.stringify(params));
+    function native_call_android(tag, method, callbackId, params){
+        return _WebViewCommunicator.nativeCall(tag, method, callbackId, JSON.stringify(params));
     }
 
-    function native_call_ios(tag, method, params) {
+    function native_call_ios(tag, method, callbackId, params) {
         function getURL(tag, method, params) {
             var url = "js:WebViewCommunicator/" + tag + "/" + method + "/" + JSON.stringify(params);
             return url;
@@ -203,7 +204,7 @@ var WebViewCommunicator =  (function(){
         },
         callback : function (resp) {
             var callbackId = resp.callbackId;
-            if(callbackId) {
+            if(callbackId > 0) {
                 // Call the call back handler
                 // with the response object 1. resp obtained from the native method call
                 callbacks[callbackId].apply(this, [resp]);
