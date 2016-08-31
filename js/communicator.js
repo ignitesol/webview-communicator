@@ -175,6 +175,7 @@ var WebViewCommunicator =  (function(){
     return ({
         raiseEvent : raise_event,
         nativeCall : native_call,
+        nativeCallWithCallback : nativeCallWithCallback,
         register : register,
         setPlatform : set_platform
     });
