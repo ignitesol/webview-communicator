@@ -168,7 +168,7 @@ var WebViewCommunicator =  (function(){
         } else {
             // In case the platorm is undefined it means we are not on
             // sdk and hence directly call in the callback function provided.
-            if(!callbackId) {
+            if(callbackId) {
                 callbacks[callbackId].apply(this, []);
             }
         }
@@ -198,7 +198,7 @@ var WebViewCommunicator =  (function(){
         },
         callback : function (resp) {
             var callbackId = resp.callbackId;
-            if(!callbackId) {
+            if(callbackId) {
                 // Call the call back handler
                 // with the response object 1. resp obtained from the native method call
                 callbacks[callbackId].apply(this, [resp]);
