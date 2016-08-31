@@ -153,24 +153,30 @@ var WebViewCommunicator =  (function(){
      PURPOSE: Call a specified native method. And when the method is done with, call the
      specified callback handler with the data the native method responds with
      PARAMS: 1. tag 2. method have their usual meaning. 3. callback has to be a valid javascript function
+     TODO We need to refactor this code with the nativeCall method as both do almost a similar job.
      */
     function nativeCallWithCallback(tag, method, callback) {
+        var __callbackId = 0;
         // Incase the callback is a valid javascript function
         // add it to the callbacks associative array
         if(isFunction(callback)) {
             // The callbackId is incremented by one everytime the nativeCallWithCallback method is called
             callbackId += 1;
+            __callbackId = callbackId;
             //Register the specified callback with an id
             callbacks[callbackId] = callback;
+        } else {
+            // In case no callback is specified throw an error
+            return;
         }
         // Get the other params.
         var params = Array.prototype.slice.call(arguments, 3);
         // Platform specific native call for the methods.
         // We pass on the callbackId as an extra parameter
         if (platform === "android") {
-            native_call_android(tag, method, callbackId, params);
+            native_call_android(tag, method, __callbackId, params);
         } else if (platform === "ios") {
-            native_call_ios(tag, method, callbackId, params);
+            native_call_ios(tag, method, __callbackId, params);
         } else {
             // In case the platorm is undefined it means we are not on
             // sdk and hence directly call in the callback function provided.
