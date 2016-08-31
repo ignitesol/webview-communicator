@@ -58,7 +58,31 @@ var WebViewCommunicator =  (function(){
         }
         registeredObjects[tag] = object;
     }
+    /**
+     * Determine the mobile operating system.
+     * This function returns one of 'iOS', 'Android', 'Windows Phone', or 'unknown'.
+     *
+     * @returns {String}
+     */
+    function checkUserAgent() {
+        var userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
+        // Windows Phone must come first because its UA also contains "Android"
+        if (/windows phone/i.test(userAgent)) {
+            return "Windows Phone";
+        }
+
+        if (/android/i.test(userAgent)) {
+            return "Android";
+        }
+
+        // iOS detection from: http://stackoverflow.com/a/9039885/177710
+        if (/iPad|iPhone|iPod/.test(userAgent) && !window.MSStream) {
+            return "iOS";
+        }
+
+        return false;
+    }
     /*
      * Since now we are trying to support both platforms (iOS and android) using
      * the same JS code we need a way to determine the platform the script is
@@ -67,7 +91,12 @@ var WebViewCommunicator =  (function(){
      */
     function guess_platform() {
         if (typeof _WebViewCommunicator === "undefined") {
-            return "ios";
+            var userAgent = checkUserAgent();
+            if(userAgent && userAgent == "iOS") {
+                return "ios";
+            } else {
+                return undefined;
+            }
         } else {
             return "android";
         }
@@ -136,6 +165,12 @@ var WebViewCommunicator =  (function(){
             native_call_android(tag, method, callbackId, params);
         } else if (platform === "ios") {
             native_call_ios(tag, method, callbackId, params);
+        } else {
+            // In case the platorm is undefined it means we are not on
+            // sdk and hence directly call in the callback function provided.
+            if(!callbackId) {
+                callbacks[callbackId].apply(this, []);
+            }
         }
     }
 
@@ -162,7 +197,6 @@ var WebViewCommunicator =  (function(){
             console.log(message);
         },
         callback : function (resp) {
-            console.log(resp);
             var callbackId = resp.callbackId;
             if(!callbackId) {
                 // Call the call back handler
