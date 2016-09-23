@@ -181,7 +181,7 @@ var WebViewCommunicator =  (function(){
             // In case the platorm is undefined it means we are not on
             // sdk and hence directly call in the callback function provided.
             if(callbackId) {
-                callbacks[callbackId].apply(this, [{isSdk : false}]);
+                callbacks[callbackId].apply(this, [{isSdk : false, enableNative : false}]);
             }
         }
     }
