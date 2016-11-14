@@ -192,7 +192,7 @@ var WebViewCommunicator =  (function(){
 
     function native_call_ios(tag, method, callbackId, params) {
         function getURL(tag, method, params) {
-            var url = "js:WebViewCommunicator/" + tag + "/" + method + "/" + JSON.stringify(params);
+            var url = "js:WebViewCommunicator/" + tag + "/" + method + "/" + encodeURIComponent(JSON.stringify(params));
             return url;
         }
 
