@@ -104,16 +104,26 @@
                                  stringByReplacingOccurrencesOfString:@"+" withString:@" "]
                                 stringByReplacingPercentEscapesUsingEncoding:NSUTF8StringEncoding];
         
-        NSArray* components = [decodeURL componentsSeparatedByString:@"/"];
+        NSMutableArray* components = [[decodeURL componentsSeparatedByString:@"/"] mutableCopy];
         
         id <MessageReciever> target = [self.registeredObjects objectForKey:[components objectAtIndex:0]];
-        
         NSString *method = [components objectAtIndex:1];
         
+        /*
+            Removing the 0th and the 1st elements
+            Reason: 
+            Basically if there are / in the <arguments> part of the request, then when splitting the request,
+            they also get split, and just JSON parsing the component[2] won't work (it might give out nil too).
+            So,need the next two steps - remove the first 2 elements, join the rest of the array using / and JSON.parse it.
+         */
+        [components removeObjectsInRange:NSMakeRange(0, 2)];
+        NSString *respStr = [components componentsJoinedByString:@"/"];
+        
         // Convert the arguments from of JSON array to NSArray
-        NSArray *arguments = [NSJSONSerialization JSONObjectWithData: [[components objectAtIndex:2] dataUsingEncoding:NSUTF8StringEncoding]
+        NSArray *arguments = [NSJSONSerialization JSONObjectWithData: [respStr dataUsingEncoding:NSUTF8StringEncoding]
                                                              options: NSJSONReadingMutableContainers
                                                                error: nil];
+
         
         // Finally invoke the target with the method name and the arguments array
         [target receiveCallFromJS:method withArguments:arguments];
